@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Feliz App</title>
+        <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" type="image/png" href="./img/favicon-32x32.png" sizes="32x32" />
+        <link rel="shortcut icon" type="image/png" href="./img/favicon-16x16.png" sizes="16x16" />
+        <script>
+            // modified from here: https://stackoverflow.com/questions/29261304/how-to-get-the-click-coordinates-relative-to-svg-element-holding-the-onclick-lis
+            function getSvgCoordinates(evt) {
+                var svg = evt.currentTarget;
+                var pt = svg.createSVGPoint(); 
+                pt.x = evt.clientX;
+                pt.y = evt.clientY;
+
+                // The cursor point, translated into svg coordinates
+                var cursorpt =  pt.matrixTransform(svg.getScreenCTM().inverse());
+                return cursorpt;
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Hello from index.html 👋</h1>
+
+        <div id="debug-box">
+            <strong>Static HTML is working.</strong><br/>
+            If you see this, Vite is serving your page correctly.<br/>
+            Below is the Elmish/Feliz app container:
+        </div>
+
+        <div id="feliz-app">
+            <em>F# / Fable / Feliz will render here...</em>
+        </div>
+
+        <script>
+            console.log("Index.html loaded — waiting for Fable bundle...");
+        </script>
+        <div id="feliz-app"></div>
+        <script type="module" src="./Main.fs.js"></script>
+    </body>
+</html>
