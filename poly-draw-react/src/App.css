@@ -1,0 +1,70 @@
+
+.app {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-Content: center;
+    align-Items: center;
+}
+
+.toolbar{
+    height: 2rem;
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+
+
+}
+
+.canvas {
+    width: 100vw;
+    height: 60vh;
+}
+
+.btn {
+    /* Variables - Added a primary accent for the 'special' feel */
+    --bg: #fafafa;
+    --bg-hover: white;
+    --text: #444444;
+    --border: #bcbcbc;
+    --shadow: rgba(0, 0, 0, 0.2);
+    --spring-easing: cubic-bezier(0.5, 1.5, 0.5, 1); /* The 'Bounce' Secret */
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px; /* Slightly more breathing room */
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+
+    color: var(--text);
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px; /* Slightly rounder for a modern look */
+    cursor: pointer;
+
+    /* Transition everything using the spring easing */
+    transition: all 0.3s var(--spring-easing);
+    box-shadow: 0 1px 2px var(--shadow);
+    outline: none;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hover: Lift the button and make it bigger */
+.btn:hover {
+    background-color: var(--bg-hover);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 4px 12px var(--shadow);
+    border-color: #bcbcbc;
+}
+
+/* Active: The 'Squish' effect */
+.btn:active {
+    transform: translateY(0) scale(0.92);
+    box-shadow: 0 1px 1px var(--shadow);
+    transition-duration: 0.1s; /* Faster response when clicking */
+}

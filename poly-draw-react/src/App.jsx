@@ -1,11 +1,13 @@
 import "./App.css";
-import { PolyCanvas } from "./canvas/PolyCanvas.jsx";
+import PolyCanvas from "./PolyCanvas.jsx";
+import Toolbar from "./Toolbar.jsx";
 
 function App() {
   return (
-    <>
+    <div className="app" style={{}}>
+      <Toolbar></Toolbar>
       <PolyCanvas />
-    </>
+    </div>
   );
 }
 

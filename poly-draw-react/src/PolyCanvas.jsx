@@ -2,13 +2,13 @@ import { Canvas } from "@react-three/fiber";
 import { Line, OrthographicCamera } from "@react-three/drei";
 import { useState } from "react";
 
-export function PolyCanvas() {
+function PolyCanvas() {
   const [points, setPoints] = useState([]);
   const [preview, setPreview] = useState([]);
 
   const [polygons, setPolygons] = useState([]);
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
+    <div className="canvas">
       <Canvas>
         <mesh
           position={[0, 0, -1]}
@@ -49,3 +49,5 @@ export function PolyCanvas() {
     </div>
   );
 }
+
+export default PolyCanvas;
