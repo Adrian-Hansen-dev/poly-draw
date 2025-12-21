@@ -1,11 +1,12 @@
-import './App.css'
-import {PolyCanvas} from "./canvas/PolyCanvas.jsx";
+import "./App.css";
+import { PolyCanvas } from "./canvas/PolyCanvas.jsx";
 
 function App() {
   return (
     <>
-    <PolyCanvas/></>
-  )
+      <PolyCanvas />
+    </>
+  );
 }
 
-export default App
+export default App;
