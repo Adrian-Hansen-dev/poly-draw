@@ -32,7 +32,7 @@ function PolyCanvas({ points, setPoints, polygons, setPolygons }) {
           }}
         >
           <planeGeometry args={[100, 100]} />
-          <meshBasicMaterial opacity={0} />
+          <meshBasicMaterial color="#ffffff" />
         </mesh>
         <OrthographicCamera makeDefault position={[0, 0, 10]} zoom={100} />
         {points.length > 1 && (
