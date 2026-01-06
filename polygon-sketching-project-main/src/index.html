@@ -36,7 +36,8 @@
         <script>
             console.log("Index.html loaded — waiting for Fable bundle...");
         </script>
-        <div id="feliz-app"></div>
-        <script type="module" src="./Main.fs.js"></script>
+        <script type="module">
+            import "./Main.fs"
+        </script>
     </body>
 </html>

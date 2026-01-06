@@ -63,7 +63,21 @@ For FinishPolygon mesages:
  - if there is a current polygon, reset the current polygon to None and add the current polygon as a new elemnet to finishedPolygons.
 *)
 let updateModel (msg : Msg) (model : Model) =
-    model
+    match msg with
+    | AddPoint coord ->
+        match model.currentPolygon with
+        | None ->
+            { model with currentPolygon = Some [coord] }
+        | Some vertices ->
+            { model with currentPolygon = Some (coord :: vertices) }
+    | FinishPolygon ->
+        match model.currentPolygon with
+        | None -> model
+        | Some vertices ->
+            { model with
+                currentPolygon = None
+                finishedPolygons = vertices :: model.finishedPolygons }
+    | _ -> model
 
 // wraps an update function with undo/redo.
 let addUndoRedo (updateFunction : Msg -> Model -> Model) (msg : Msg) (model : Model) =
@@ -74,15 +88,16 @@ let addUndoRedo (updateFunction : Msg -> Model -> Model) (msg : Msg) (model : Mo
         // update the mouse position and create a new model.
         { model with mousePos = p }
     | Undo -> 
-        // TODO implement undo logics, HINT: restore the model stored in past, and replace the current
-        // state with it.
-        model
+        match model.past with
+        | Some previous -> { previous with future = Some model }
+        | None -> model
     | Redo -> 
-        // TODO: same as undo
-        model
+        match model.future with
+        | Some next -> { next with past = Some model }
+        | None -> model
     | _ -> 
         // use the provided update function for all remaining messages
-        { updateFunction msg model with past = Some model }
+        { updateFunction msg model with past = Some model; future = None }
 
 
 let update (msg : Msg) (model : Model)  =
@@ -107,6 +122,7 @@ let viewPolygon (color : string) (points : PolyLine) =
  
 
 let render (model : Model) (dispatch : Msg -> unit) =
+    Browser.Dom.console.log("PolygonDrawing.render", model)
     let border = 
         Svg.rect [ // i used ; to group together attributes semantically.
             svg.x1 0; svg.x2 500
