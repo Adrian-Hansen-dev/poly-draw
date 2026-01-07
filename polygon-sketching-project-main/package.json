@@ -1,10 +1,10 @@
 {
   "private": true,
   "scripts": {
-    "start": "dotnet tool restore && dotnet fable watch src -s --runFast vite",
-    "debug": "dotnet tool restore && dotnet fable watch src -s --run npx vite",
-    "build": "dotnet tool restore && dotnet fable src --run vite build",
-    "clean": "dotnet fable clean src --yes"
+    "start": "dotnet tool restore && dotnet fable watch src/App.fsproj -s --run vite",
+    "debug": "dotnet tool restore && dotnet fable watch src/App.fsproj -s --run npx vite",
+    "build": "dotnet tool restore && dotnet fable src/App.fsproj --run vite build",
+    "clean": "dotnet fable clean src/App.fsproj --yes"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -12,8 +12,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.2",
-    "vite": "^6.4.1",
-    "vite-plugin-fable": "^0.1.1"
+    "vite": "^6.4.1"
   },
   "overrides": {
     "ts-lsp-client": "1.0.4"

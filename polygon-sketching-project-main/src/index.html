@@ -21,14 +21,6 @@
         </script>
     </head>
     <body>
-        <h1>Hello from index.html 👋</h1>
-
-        <div id="debug-box">
-            <strong>Static HTML is working.</strong><br/>
-            If you see this, Vite is serving your page correctly.<br/>
-            Below is the Elmish/Feliz app container:
-        </div>
-
         <div id="feliz-app">
             <em>F# / Fable / Feliz will render here...</em>
         </div>
@@ -36,8 +28,6 @@
         <script>
             console.log("Index.html loaded — waiting for Fable bundle...");
         </script>
-        <script type="module">
-            import "./Main.fs"
-        </script>
+        <script type="module" src="./Main.fs.js"></script>
     </body>
 </html>
