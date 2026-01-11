@@ -8,14 +8,17 @@ module PolygonDrawing
 open Fable.Core
 open Feliz
 open Elmish
+open Browser.Dom
+open System
 
 // we use a record here, a tuple could also serve the purpose though
 type Coord = { x : float; y : float }
+type CanvasSize = { width : float; height : float }
 
 // "polygon" line. Each list element describes the respective vertex.
 // note that we could use a record here, but a type-alias is more lightweight
 // and serves its purpose.
-// I recommend stroring the coordinates in reverse order, so that each vertex gets prepended
+// I recommend storing the coordinates in reverse order, so that each vertex gets prepended
 // to the list. This way, adding new vertices is O(1).
 type PolyLine = list<Coord>
 
@@ -33,6 +36,8 @@ type Model = {
     past : Option<Model>
     // used for redo
     future : Option<Model>
+    // current canvas size in SVG user units (px)
+    canvasSize : CanvasSize
 }
 
 // and explicit representation of all possible user interactions. This one can be used for 
@@ -40,15 +45,32 @@ type Model = {
 type Msg =
     | AddPoint of Coord
     | SetCursorPos of Option<Coord>
+    | SetCanvasSize of CanvasSize
     | FinishPolygon
     | Undo
     | Redo
 
 // creates the initial model, which is used when creating the interactive application (see Main.fs)
+let canvasPadding = 22.0
+let topReservedSpace = 180.0
+
+let clampMin minValue value =
+    if value < minValue then minValue else value
+
+let getCanvasSize () =
+    let width =
+        float document.documentElement.clientWidth - (canvasPadding * 2.0)
+        |> clampMin 0.0
+    let height =
+        float document.documentElement.clientHeight - topReservedSpace - (canvasPadding * 2.0)
+        |> clampMin 0.0
+    { width = width; height = height }
+
 let init () =
+    let size = getCanvasSize ()
     let m = 
         { finishedPolygons = []; currentPolygon = None; // records can be written multiline
-          mousePos = None ; past = None; future = None }
+          mousePos = None ; past = None; future = None; canvasSize = size }
     m, Cmd.none // Cmd is optionally to explicitly represent side-effects in a safe manner (here we don't bother)
 
 
@@ -87,6 +109,8 @@ let addUndoRedo (updateFunction : Msg -> Model -> Model) (msg : Msg) (model : Mo
     | SetCursorPos p -> 
         // update the mouse position and create a new model.
         { model with mousePos = p }
+    | SetCanvasSize size ->
+        { model with canvasSize = size }
     | Undo -> 
         match model.past with
         | Some previous -> { previous with future = Some model }
@@ -123,11 +147,17 @@ let viewPolygon (color : string) (points : PolyLine) =
 
 let render (model : Model) (dispatch : Msg -> unit) =
     Browser.Dom.console.log("PolygonDrawing.render", model)
+    let size = model.canvasSize
+    let borderInset = 1.0
+    let borderWidth = clampMin 0.0 (size.width - (borderInset * 2.0))
+    let borderHeight = clampMin 0.0 (size.height - (borderInset * 2.0))
+    let borderRadius = 12.0
     let border = 
         Svg.rect [ // i used ; to group together attributes semantically.
-            svg.x1 0; svg.x2 500
-            svg.y1 0; svg.y2 500
-            svg.width 500; svg.height 500
+            svg.x1 borderInset; svg.x2 (borderInset + borderWidth)
+            svg.y1 borderInset; svg.y2 (borderInset + borderHeight)
+            svg.width borderWidth; svg.height borderHeight
+            svg.rx borderRadius; svg.ry borderRadius
             svg.stroke("black"); svg.strokeWidth(2); svg.fill "none"
         ] 
 
@@ -148,22 +178,33 @@ let render (model : Model) (dispatch : Msg -> unit) =
     let svgElements = List.concat [finisehdPolygons; currentPolygon]
 
     Html.div [
-        prop.style [style.custom("userSelect","none")]
+        prop.style [
+            style.custom("userSelect", "none")
+            style.custom("display", "flex")
+            style.custom("flexDirection", "column")
+            style.custom("boxSizing", "border-box")
+            style.custom("height", "100vh")
+            style.custom("padding", "16px")
+            style.custom("gap", "16px")
+        ]
         prop.children [
-            Html.h1 "Simplest drawing"
-            Html.button [
-                prop.style [style.margin 20]; 
-                prop.onClick (fun _ -> dispatch Undo)
-                prop.children [Html.text "undo"]
+            Html.div [
+                prop.children [
+                    Html.h1 "Polygon Sketching App"
+                    Html.button [
+                        prop.style [style.margin 20]; 
+                        prop.onClick (fun _ -> dispatch Undo)
+                        prop.children [Html.text "undo"]
+                    ]
+                    Html.button [
+                        prop.style [style.margin 20]
+                        prop.onClick (fun _ -> dispatch Redo)
+                        prop.children [Html.text "redo"]
+                    ]
+                ]
             ]
-            Html.button [
-                prop.style [style.margin 20]
-                prop.onClick (fun _ -> dispatch Redo)
-                prop.children [Html.text "redo"]
-            ]
-            Html.br []
             Svg.svg [
-                svg.width 500; svg.height 500
+                svg.width size.width; svg.height size.height
                 svg.onMouseMove (fun mouseEvent -> 
                     // compute SVG relative coordinates, using javascript function
                     let pos = getSvgCoordinates mouseEvent
@@ -191,3 +232,14 @@ let render (model : Model) (dispatch : Msg -> unit) =
             ]
         ]
     ]
+
+let subscriptions (_model : Model) =
+    let subscribe dispatch =
+        let handler (_: Browser.Types.Event) =
+            dispatch (SetCanvasSize (getCanvasSize ()))
+        window.addEventListener("resize", handler)
+        { new IDisposable with
+            member _.Dispose() =
+                window.removeEventListener("resize", handler)
+        }
+    [ ["window"; "resize"], subscribe ]
