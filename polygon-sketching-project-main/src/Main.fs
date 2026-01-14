@@ -8,7 +8,8 @@ open Elmish.HMR // Elmish.HMR needs to be the last open instruction in order to 
  
    
 let init,update,render = 
-    PolygonDrawing.init, PolygonDrawing.update, PolygonDrawing.render
+    OwnPolygonDrawing.init, OwnPolygonDrawing.update, OwnPolygonDrawing.render
+    //PolygonDrawing.init, PolygonDrawing.update, PolygonDrawing.render
     //Canvas.init, Canvas.update, Canvas.render
     //Counter.init, Counter.update, Counter.render
 
@@ -16,5 +17,7 @@ console.log("Main.fs loaded - starting Elmish app")
 
 Program.mkProgram init update render
 |> Program.withReactSynchronous "feliz-app"
-|> Program.withSubscription PolygonDrawing.subscriptions
+
 |> Program.run  
+
+// |> Program.withSubscription PolygonDrawing.subscriptions
