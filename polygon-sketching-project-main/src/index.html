@@ -6,6 +6,45 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="shortcut icon" type="image/png" href="./img/favicon-32x32.png" sizes="32x32" />
         <link rel="shortcut icon" type="image/png" href="./img/favicon-16x16.png" sizes="16x16" />
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                background: lightgray;
+            }
+
+            .liquid-btn {
+                position: relative;
+                padding: 10px 22px;
+                border-radius: 999px;
+                border: 1px solid rgba(255, 255, 255, 0.55);
+                background-color: rgba(255, 255, 255, 0.02);
+                color: green;
+                font-family: "SF Compact Rounded", serif;
+                font-weight: 600;
+                letter-spacing: 0.3px;
+                box-shadow:
+                    0 10px 24px rgba(0, 0, 0, 0.12),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+                backdrop-filter: blur(20px) saturate(1.6);
+                -webkit-backdrop-filter: blur(20px) saturate(1.6);
+                transition: transform 120ms ease, box-shadow 120ms ease;
+                cursor: pointer;
+            }
+
+            .liquid-btn:hover {
+                transform: translateY(-1px);
+                box-shadow:
+                    0 14px 30px rgba(0, 0, 0, 0.16),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                    inset 0 -10px 16px rgba(0, 0, 0, 0.1);
+            }
+
+            .liquid-btn:active {
+                transform: translateY(1px);
+            }
+        </style>
         <script>
             // modified from here: https://stackoverflow.com/questions/29261304/how-to-get-the-click-coordinates-relative-to-svg-element-holding-the-onclick-lis
             function getSvgCoordinates(evt) {
