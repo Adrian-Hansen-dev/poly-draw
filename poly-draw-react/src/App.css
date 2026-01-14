@@ -38,6 +38,11 @@
     margin: 0;
 }
 
+.btn-group {
+    display: flex;
+    gap: 10px;
+}
+
 .btn {
     /* Variables - Added a primary accent for the 'special' feel */
     --bg: #fafafa;

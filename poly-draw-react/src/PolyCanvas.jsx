@@ -2,7 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { Line, OrthographicCamera } from "@react-three/drei";
 import { useState } from "react";
 
-function PolyCanvas({ points, setPoints, polygons, setPolygons }) {
+function PolyCanvas({ points, setPoints, polygons, setPolygons, resetRedoStack }) {
   const [preview, setPreview] = useState([]);
 
   return (
@@ -21,6 +21,7 @@ function PolyCanvas({ points, setPoints, polygons, setPolygons }) {
           }}
           onClick={(e) => {
             const { x, y } = e.point;
+            resetRedoStack();
             setPoints((prev) => [...prev, [x, y]]);
           }}
           onDoubleClick={(e) => {
