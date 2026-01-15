@@ -13,6 +13,7 @@ function PolyCanvas({ points, setPoints, polygons, setPolygons, resetRedoStack }
           onPointerMove={(e) => {
             const { x, y } = e.point;
             if (points.length > 0) {
+              // Linie zwischen letzem Punkt und Mausposition als Vorschau zeichnen
               setPreview([points[points.length - 1], [x, y]]);
             }
           }}
@@ -36,12 +37,15 @@ function PolyCanvas({ points, setPoints, polygons, setPolygons, resetRedoStack }
           <meshBasicMaterial color="#ffffff" />
         </mesh>
         <OrthographicCamera makeDefault position={[0, 0, 10]} zoom={100} />
+        {/* draw current points */}
         {points.length > 1 && (
           <Line points={points} color="black" lineWidth={2} />
         )}
+        {/* draw preview */}
         {preview.length > 0 && (
           <Line points={preview} color="red" lineWidth={2} />
         )}
+        {/* draw polygons */}
         <group>
           {polygons.map((poly, index) => (
             <Line key={index} points={poly} color="blue" lineWidth={2} closed />
