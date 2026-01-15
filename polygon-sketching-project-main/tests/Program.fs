@@ -15,6 +15,7 @@ module Sorting =
 let tests =
     testList "Main" [
         PolygonDrawing.Tests.polygonEditingTests
+        OwnPolygonDrawing.Tests.ownPolygonDrawingTests
         test "Hello World" {
             let subject = "Hello World"
             Expect.equal subject "Hello World" "The strings should equal"
