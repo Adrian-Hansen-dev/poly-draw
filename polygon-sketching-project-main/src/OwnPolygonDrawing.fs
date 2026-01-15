@@ -66,6 +66,11 @@ let render (model: Model) (dispatch: Msg -> unit) =
         let relY = mouseEvent.clientY - rect.top
         relX, relY
 
+    let previewPoints =
+        match model.mousePos, model.currentPolyline with
+        | Some pos, (_ :: _) -> pos :: model.currentPolyline
+        | _ -> model.currentPolyline
+
     Html.div [
         prop.style [ 
             style.padding 20 
@@ -115,6 +120,13 @@ let render (model: Model) (dispatch: Msg -> unit) =
                                 svg.strokeWidth 2
                                 svg.rx 12
                                 svg.ry 12
+                            ]
+                            if List.length previewPoints > 1 then
+                                Svg.polyline [
+                                svg.points (pointsToString previewPoints)
+                                svg.fill "none"
+                                svg.stroke "red"
+                                svg.strokeWidth 2
                             ]
                             if List.length model.currentPolyline > 1 then
                                 Svg.polyline [
