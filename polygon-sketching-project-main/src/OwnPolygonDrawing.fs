@@ -17,6 +17,8 @@ type Model = {
     currentPolyline: Option<PolyLine>
     finishedPolygons: list<PolyLine>
     mousePos: Option<Coord>
+    past: Option<Model>
+    future: Option<Model>
 }
 
 type Msg =
@@ -45,11 +47,14 @@ let init () : Model * Cmd<Msg> =
         { canvasSize = { width = 1000.0; height = 600.0 }
           currentPolyline = None
           finishedPolygons = []
-          mousePos = None }
+          mousePos = None
+          past = None
+          future = None }
     m, Cmd.none
 
 // Elmish needs update : Msg -> Model -> Model * Cmd<Msg> (or Model * Cmd<Msg>
 let update (msg : Msg) (model : Model) : Model * Cmd<Msg> =
+    let snapshot (m : Model) = { m with mousePos = None }
     match msg with
     | MouseMove (x, y) ->
         let pos = toSvgCoord model.canvasSize (x, y)
@@ -60,16 +65,25 @@ let update (msg : Msg) (model : Model) : Model * Cmd<Msg> =
             match model.currentPolyline with
             | None -> Some [pos]
             | Some vertices -> Some (pos :: vertices)
-        { model with currentPolyline = nextPolyline }, Cmd.none
+        let nextModel = { model with currentPolyline = nextPolyline }
+        { nextModel with past = Some (snapshot model); future = None }, Cmd.none
     | FinishPolygon ->
         match model.currentPolyline with
         | None -> model, Cmd.none
         | Some vertices ->
-            { model with
-                currentPolyline = None
-                finishedPolygons = vertices :: model.finishedPolygons }, Cmd.none
-    | Undo -> model, Cmd.none
-    | Redo -> model, Cmd.none
+            let nextModel =
+                { model with
+                    currentPolyline = None
+                    finishedPolygons = vertices :: model.finishedPolygons }
+            { nextModel with past = Some (snapshot model); future = None }, Cmd.none
+    | Undo ->
+        match model.past with
+        | Some previous -> { previous with future = Some (snapshot model); mousePos = None }, Cmd.none
+        | None -> model, Cmd.none
+    | Redo ->
+        match model.future with
+        | Some next -> { next with past = Some (snapshot model); mousePos = None }, Cmd.none
+        | None -> model, Cmd.none
     | _ -> model, Cmd.none
 
 // Own Logic
@@ -105,7 +119,7 @@ let render (model: Model) (dispatch: Msg -> unit) =
             [ Svg.polyline [
                 svg.points (pointsToString vertices)
                 svg.fill "none"
-                svg.stroke "black"
+                svg.stroke "red"
                 svg.strokeWidth 2
               ] ]
         | _ -> []
