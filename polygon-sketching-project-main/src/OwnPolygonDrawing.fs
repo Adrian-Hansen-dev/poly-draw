@@ -14,7 +14,8 @@ let viewBoxHeight = 600.0
 
 type Model = { 
     canvasSize : CanvasSize
-    currentPolyline: list<Coord>
+    currentPolyline: Option<PolyLine>
+    finishedPolygons: list<PolyLine>
     mousePos: Option<Coord>
 }
 
@@ -22,6 +23,7 @@ type Msg =
     | SetCanvasSize of CanvasSize
     | MouseMove of float * float
     | AddPoint of float * float
+    | FinishPolygon
     | Undo
     | Redo
 
@@ -41,7 +43,8 @@ let pointsToString (points : list<Coord>) =
 let init () : Model * Cmd<Msg> =
     let m = 
         { canvasSize = { width = 1000.0; height = 600.0 }
-          currentPolyline = []
+          currentPolyline = None
+          finishedPolygons = []
           mousePos = None }
     m, Cmd.none
 
@@ -53,9 +56,21 @@ let update (msg : Msg) (model : Model) : Model * Cmd<Msg> =
         { model with mousePos = Some pos }, Cmd.none
     | AddPoint (x, y) ->
         let pos = toSvgCoord model.canvasSize (x, y)
-        { model with currentPolyline = pos :: model.currentPolyline }, Cmd.none
+        let nextPolyline =
+            match model.currentPolyline with
+            | None -> Some [pos]
+            | Some vertices -> Some (pos :: vertices)
+        { model with currentPolyline = nextPolyline }, Cmd.none
+    | FinishPolygon ->
+        match model.currentPolyline with
+        | None -> model, Cmd.none
+        | Some vertices ->
+            { model with
+                currentPolyline = None
+                finishedPolygons = vertices :: model.finishedPolygons }, Cmd.none
     | Undo -> model, Cmd.none
     | Redo -> model, Cmd.none
+    | _ -> model, Cmd.none
 
 // Own Logic
 
@@ -68,8 +83,32 @@ let render (model: Model) (dispatch: Msg -> unit) =
 
     let previewPoints =
         match model.mousePos, model.currentPolyline with
-        | Some pos, (_ :: _) -> pos :: model.currentPolyline
-        | _ -> model.currentPolyline
+        | Some pos, Some vertices when vertices <> [] -> pos :: vertices
+        | _, Some vertices -> vertices
+        | _ -> []
+
+    let finishedPolylines =
+        model.finishedPolygons
+        |> List.filter (fun poly -> List.length poly > 1)
+        |> List.map (fun poly ->
+            Svg.polyline [
+                svg.points (pointsToString poly)
+                svg.fill "none"
+                svg.stroke "green"
+                svg.strokeWidth 2
+            ]
+        )
+
+    let currentPolylineElement =
+        match model.currentPolyline with
+        | Some vertices when List.length vertices > 1 ->
+            [ Svg.polyline [
+                svg.points (pointsToString vertices)
+                svg.fill "none"
+                svg.stroke "black"
+                svg.strokeWidth 2
+              ] ]
+        | _ -> []
 
     Html.div [
         prop.style [ 
@@ -107,9 +146,14 @@ let render (model: Model) (dispatch: Msg -> unit) =
                         )
                         svg.onClick (fun mouseEvent ->
                             let relX, relY = getRelativePos mouseEvent
-                            dispatch (AddPoint (relX, relY))
+                            if mouseEvent.detail = 1 then
+                                dispatch (AddPoint (relX, relY))
+                            elif mouseEvent.detail = 2 then
+                                dispatch FinishPolygon
                         )
-                        svg.children [
+                        svg.children (
+                            List.concat [
+                                [
                             Svg.rect [
                                 svg.x 0
                                 svg.y 0
@@ -128,13 +172,6 @@ let render (model: Model) (dispatch: Msg -> unit) =
                                 svg.stroke "red"
                                 svg.strokeWidth 2
                             ]
-                            if List.length model.currentPolyline > 1 then
-                                Svg.polyline [
-                                    svg.points (pointsToString model.currentPolyline)
-                                    svg.fill "none"
-                                    svg.stroke "black"
-                                    svg.strokeWidth 2
-                                ]
                             match model.mousePos with
                             | Some pos ->
                                 Svg.circle [
@@ -144,7 +181,11 @@ let render (model: Model) (dispatch: Msg -> unit) =
                                     svg.fill "green"
                                 ]
                             | None -> Html.none
-                        ]
+                                ]
+                                currentPolylineElement
+                                finishedPolylines
+                            ]
+                        )
                     ]
                 ]
             ]
