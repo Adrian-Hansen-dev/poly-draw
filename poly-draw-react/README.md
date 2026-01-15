@@ -1,18 +1,27 @@
-# React + Vite
+**Funktionale Prinzipien die wir genutzt haben**
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+- Setzen Immutability mit dem **Spread Operator** (`...`) → kopieren von Arrays anstatt array.push (verändern)
+- Higher-Order Functions
+    - Funktion die Funktionen als parameter annehmen
+- Declarative Style → gewünschte **Endergebnis** anstatt die exakten **Rechenschritte**
+    - z.B map() function zum rendern der Polygons
 
-Currently, two official plugins are available:
+**Was war schwierig?** 
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Unser State Management approach ist mir beim implementieren der Redo-Funktion auf die Füße gefallen
+- 2 useStates[]  für Points und Polygons noch verständlich
+- 4 useStates[]  f für Points, Polygons, RedoPoints und RedoPolygons nicht mehr
+    - Debugging dann sehr schwierig → viel hin und her geschoben wird
 
-## React Compiler
+**Was kann man noch verbessern?** 
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **"Fragmented” state**
+    - 4 Arrays führt schnell zu Fehlern
+    - Alternativ: "History"-Array und ein Index anstatt 4 States nur zwei:
+    1. **`history`**: Ein Array, das den kompletten Zustand (Punkte + Polygone) zu jedem Zeitpunkt speichert.
+    2. **`index`**: Ein Zeiger, der angibt, an welchem Punkt der History wir uns gerade befinden.
+- **Strict typing:** JavaScript → TypeScript
+- **Single Responsibility Pattern**
+    - undo, redo functions in App.jsx → Für die Demo irrelevant
+- **Erweiterbarkeit** der Lines und Polygons
+    - Components für die Lines und Polygons erstellen, damit mehr Attribute möglich sind: Thickness, Color etc.
