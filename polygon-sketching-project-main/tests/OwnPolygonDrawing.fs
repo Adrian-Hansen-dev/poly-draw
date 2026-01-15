@@ -11,20 +11,24 @@ module Tests =
           past = None
           future = None }
 
+    // Ignore history and mouse cursor for state comparison.
     let stripHistory (m : Model) =
         { m with past = None; future = None; mousePos = None }
 
+    // Helper to apply AddPoint in a single call.
     let addPoint x y model =
         OwnPolygonDrawing.update (AddPoint (x, y)) model |> fst
 
     let ownPolygonDrawingTests =
         testList "OwnPolygonDrawing" [
             test "addPointStartsPolyline" {
+                // First point creates a new current polyline.
                 let result = addPoint 10.0 20.0 baseModel
                 Expect.equal result.currentPolyline (Some [{ x = 10.0; y = 20.0 }]) "current polyline starts"
             }
 
             test "addPointPrepends" {
+                // Points are prepended to keep O(1) insertion.
                 let result =
                     baseModel
                     |> addPoint 1.0 1.0
@@ -33,6 +37,7 @@ module Tests =
             }
 
             test "finishPolygonMovesCurrentToFinished" {
+                // Finishing moves the active polyline to the finished list.
                 let result =
                     baseModel
                     |> addPoint 1.0 1.0
@@ -43,11 +48,13 @@ module Tests =
             }
 
             test "finishPolygonOnEmptyIsSafe" {
+                // Finishing with no current polyline should be a no-op.
                 let result = OwnPolygonDrawing.update FinishPolygon baseModel |> fst
                 Expect.equal (stripHistory result) (stripHistory baseModel) "no changes when no current polyline"
             }
 
             test "undoRedoRestoresState" {
+                // Undo restores the previous state and redo returns to the newer one.
                 let m1 = addPoint 5.0 6.0 baseModel
                 let mUndo = OwnPolygonDrawing.update Undo m1 |> fst
                 Expect.equal (stripHistory mUndo) (stripHistory baseModel) "undo returns to base"

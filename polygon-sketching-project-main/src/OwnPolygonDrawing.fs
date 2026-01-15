@@ -12,6 +12,7 @@ type PolyLine = list<Coord>
 let viewBoxWidth = 1000.0
 let viewBoxHeight = 600.0
 
+// Application state for the drawing session.
 type Model = { 
     canvasSize : CanvasSize
     currentPolyline: Option<PolyLine>
@@ -21,6 +22,7 @@ type Model = {
     future: Option<Model>
 }
 
+// Messages represent all events the update function can handle.
 type Msg =
     | SetCanvasSize of CanvasSize
     | MouseMove of float * float
@@ -30,11 +32,13 @@ type Msg =
     | Redo
 
 let toSvgCoord (canvasSize: CanvasSize) (relX, relY) : Coord =
+    // Convert relative mouse pixel coords into the SVG's logical coordinate space.
     let scaleX = viewBoxWidth / canvasSize.width
     let scaleY = viewBoxHeight / canvasSize.height
     { x = relX * scaleX; y = relY * scaleY }
 
 let pointsToString (points : list<Coord>) =
+    // SVG polylines expect a "x,y x,y ..." string, so we convert the point list.
     points
     |> List.rev
     |> List.map (fun p -> sprintf "%f,%f" p.x p.y)
@@ -54,6 +58,7 @@ let init () : Model * Cmd<Msg> =
 
 // Elmish needs update : Msg -> Model -> Model * Cmd<Msg> (or Model * Cmd<Msg>
 let update (msg : Msg) (model : Model) : Model * Cmd<Msg> =
+    // Snapshot keeps history independent without cursor position.
     let snapshot (m : Model) = { m with mousePos = None }
     match msg with
     | MouseMove (x, y) ->
@@ -89,18 +94,21 @@ let update (msg : Msg) (model : Model) : Model * Cmd<Msg> =
 // Own Logic
 
 let render (model: Model) (dispatch: Msg -> unit) = 
+    // Translate viewport coordinates into SVG-local coordinates.
     let getRelativePos (mouseEvent: Browser.Types.MouseEvent) =
         let rect = (mouseEvent.currentTarget :?> Browser.Types.Element).getBoundingClientRect()
         let relX = mouseEvent.clientX - rect.left
         let relY = mouseEvent.clientY - rect.top
         relX, relY
 
+    // Preview line uses the mouse position as the next vertex.
     let previewPoints =
         match model.mousePos, model.currentPolyline with
         | Some pos, Some vertices when vertices <> [] -> pos :: vertices
         | _, Some vertices -> vertices
         | _ -> []
 
+    // Render completed polygons in a separate color.
     let finishedPolylines =
         model.finishedPolygons
         |> List.filter (fun poly -> List.length poly > 1)
@@ -113,6 +121,7 @@ let render (model: Model) (dispatch: Msg -> unit) =
             ]
         )
 
+    // Render the in-progress polyline if it has enough points.
     let currentPolylineElement =
         match model.currentPolyline with
         | Some vertices when List.length vertices > 1 ->
@@ -159,6 +168,7 @@ let render (model: Model) (dispatch: Msg -> unit) =
                             dispatch (MouseMove (relX, relY))
                         )
                         svg.onClick (fun mouseEvent ->
+                            // Single click adds a point, double click completes the polygon.
                             let relX, relY = getRelativePos mouseEvent
                             if mouseEvent.detail = 1 then
                                 dispatch (AddPoint (relX, relY))
